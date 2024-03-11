@@ -54,6 +54,7 @@ public class IndexServiceImpl implements IndexService {
             throw new SearchEngineException(ALREADY_INDEXING_MESSAGE, HttpStatus.FORBIDDEN);
         }
         siteIndexers = new ArrayList<>();
+        indexing = true;
 
         for (Site site : sites.getSites()) {
             Site normalizedSite = new Site();
@@ -64,7 +65,8 @@ public class IndexServiceImpl implements IndexService {
             siteIndexers.add(siteIndexer);
         }
 
-        indexing = true;
+        indexersCount.set(siteIndexers.size());
+
         for (SiteIndexer indexer : siteIndexers) {
             new Thread(indexer).start();
         }

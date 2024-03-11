@@ -13,7 +13,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class SiteIndexer implements Runnable {
     public enum IndexStatus {NOT_STARTED, INDEXING, INTERRUPTED, DONE}
+
     private static final String INTERRUPT_MESSAGE = "Индексация остановлена пользователем";
+    private static final String INDEXING_ERROR_MESSAGE = "Ошибка при выполнении индексирования";
+    private static final String SITE_ADD_ERROR_MESSAGE = "Ошибка при вставке в таблицу Site";
 
     private ForkJoinPool fjp;
     @Getter
@@ -31,24 +34,40 @@ public class SiteIndexer implements Runnable {
     @Override
     public void run() {
         status = IndexStatus.INDEXING;
-        int siteId = indexService.deleteOldAndCreateNewSite(site);
+        int siteId;
 
-        PageIndexData pageIndexData = PageIndexData.createRoot(site.getUrl(), siteId, indexService);
-        PageIndexAction action = new PageIndexAction(pageIndexData);
-
-        log.info("Indexing start: " + site.getUrl());
-        fjp = new ForkJoinPool();
-        fjp.invoke(action);
-        log.info("Indexing ended: " + site.getUrl() + " Status: " + status);
-
-        if (status == IndexStatus.INTERRUPTED) {
-            indexService.setSiteErrorById(siteId, INTERRUPT_MESSAGE, LocalDateTime.now());
-        } else {
-            status = IndexStatus.DONE;
-            indexService.updateSiteStatusById(siteId, IndexingStatus.INDEXED, LocalDateTime.now());
+        try {
+            siteId = indexService.deleteOldAndCreateNewSite(site);
+        } catch (Exception e) {
+            log.error(SITE_ADD_ERROR_MESSAGE);
+            indexService.indexingDone();
+            return;
         }
 
-        indexService.indexingDone();
+        try {
+            PageIndexData pageIndexData = PageIndexData.createRoot(site.getUrl(), siteId, indexService);
+            PageIndexAction action = new PageIndexAction(pageIndexData);
+
+            log.info("Indexing start: " + site.getUrl());
+            fjp = new ForkJoinPool();
+            fjp.invoke(action);
+            log.info("Indexing ended: " + site.getUrl() + " Status: " + status);
+
+            if (status == IndexStatus.INTERRUPTED) {
+                indexService.setSiteErrorById(siteId, INTERRUPT_MESSAGE, LocalDateTime.now());
+            } else {
+                status = IndexStatus.DONE;
+                indexService.updateSiteStatusById(siteId, IndexingStatus.INDEXED, LocalDateTime.now());
+            }
+        } catch (Exception e) {
+            log.error(INDEXING_ERROR_MESSAGE + " : " + e.getMessage());
+            indexService.setSiteErrorById(siteId, INDEXING_ERROR_MESSAGE + " : " +
+                    e.getMessage(), LocalDateTime.now());
+        } finally {
+            indexService.indexingDone();
+        }
+
+
     }
 
     public void stop() {
