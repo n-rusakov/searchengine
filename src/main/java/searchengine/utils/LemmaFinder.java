@@ -1,7 +1,6 @@
-package searchengine.lemmafinder;
+package searchengine.utils;
 
 import lombok.RequiredArgsConstructor;
-import org.antlr.v4.runtime.misc.Array2DHashSet;
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.springframework.stereotype.Component;
 

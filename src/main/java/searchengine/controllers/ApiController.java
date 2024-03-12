@@ -26,14 +26,14 @@ public class ApiController {
 
 
     @GetMapping("/statistics")
-    public ResponseEntity<StatisticsResponse> statistics() {
-        return ResponseEntity.ok(statisticsService.getStatistics());
+    public StatisticsResponse statistics() {
+        return statisticsService.getStatistics();
     }
 
     @GetMapping("/startIndexing")
-    public ResponseEntity<IndexingResultResponse> startIndexing() {
+    public IndexingResultResponse startIndexing() {
         indexService.startIndexing();
-        return ResponseEntity.ok(new IndexingResultResponse());
+        return new IndexingResultResponse();
     }
 
     @GetMapping("/stopIndexing")
@@ -42,14 +42,13 @@ public class ApiController {
     }
 
     @PostMapping("/indexPage")
-    public ResponseEntity<IndexingResultResponse> startPageIndex(
-            @RequestParam String url) {
+    public IndexingResultResponse startPageIndex(@RequestParam String url) {
         indexService.startPageIndexing(url);
-        return ResponseEntity.ok(new IndexingResultResponse());
+        return new IndexingResultResponse();
     }
 
     @GetMapping("/search")
-    public ResponseEntity<SearchResponse> search(SearchRequest request) {
-        return ResponseEntity.ok(searchService.getSearchResult(request));
+    public SearchResponse search(SearchRequest request) {
+        return searchService.getSearchResult(request);
     }
 }

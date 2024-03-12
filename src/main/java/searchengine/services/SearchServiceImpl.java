@@ -15,11 +15,9 @@ import searchengine.dto.search.SearchData;
 import searchengine.dto.search.SearchRequest;
 import searchengine.dto.search.SearchResponse;
 import searchengine.exceptions.SearchEngineException;
-import searchengine.lemmafinder.LemmaFinder;
+import searchengine.utils.LemmaFinder;
 import searchengine.model.IndexingStatus;
 import searchengine.model.SiteEntity;
-import searchengine.repositories.IndexRepository;
-import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.SiteRepository;
 
 import java.util.*;

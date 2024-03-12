@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
 import searchengine.exceptions.SearchEngineException;
-import searchengine.lemmafinder.LemmaFinder;
+import searchengine.utils.LemmaFinder;
 import searchengine.model.*;
 import searchengine.repositories.IndexRepository;
 import searchengine.repositories.LemmaRepository;

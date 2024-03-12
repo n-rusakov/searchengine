@@ -22,21 +22,6 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     private final JdbcTemplate jdbcTemplate;
 
-
-    /*private static final String STATISTICS_QUERY = """
-            SELECT  s.url as url,
-                    s.name as name,
-                    s.status as status,
-            	    s.status_time as status_time,
-            	    s.last_error as error,
-            	    count(distinct p.id) as pages,
-            	    count(distinct l.id) as lemmas
-            FROM site as s
-            left join page as p on s.id = p.site_id
-            left join lemma as l on s.id = l.site_id
-            group by s.id
-            """; */
-
     private static final String STATISTICS_QUERY = """
             SELECT  s.url as url,
                     s.name as name,
