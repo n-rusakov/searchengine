@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "page" /*, indexes = @Index(columnList = "path")*/)
+@Table(name = "page")
 @Getter
 @Setter
 public class PageEntity {
@@ -23,7 +23,8 @@ public class PageEntity {
     @Column(name = "site_id", nullable = false)
     private int siteId;
 
-    @Column(name = "path", columnDefinition = "TEXT, INDEX page_path_index USING BTREE (path(50))")
+    @Column(name = "`path`", columnDefinition = "TEXT, " +
+            "CONSTRAINT page_site_path_unique UNIQUE (site_id, path(50))")
     private String path;
 
     @Column(name = "code", nullable = false)

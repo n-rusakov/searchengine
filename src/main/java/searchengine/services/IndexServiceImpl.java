@@ -2,8 +2,10 @@ package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,7 @@ import searchengine.repositories.SiteRepository;
 import searchengine.siteindexer.PageIndexAction;
 import searchengine.siteindexer.SiteIndexer;
 
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +43,7 @@ public class IndexServiceImpl implements IndexService {
     private final LemmaFinder lemmaFinder;
 
     private boolean indexing = false;
-    private volatile AtomicInteger indexersCount;
+    private AtomicInteger indexersCount;
     ArrayList<SiteIndexer> siteIndexers;
 
     private static final String ALREADY_INDEXING_MESSAGE = "Индексация уже запущена";
@@ -65,7 +68,7 @@ public class IndexServiceImpl implements IndexService {
             siteIndexers.add(siteIndexer);
         }
 
-        indexersCount.set(siteIndexers.size());
+        indexersCount = new AtomicInteger();
 
         for (SiteIndexer indexer : siteIndexers) {
             new Thread(indexer).start();
@@ -87,18 +90,6 @@ public class IndexServiceImpl implements IndexService {
     @Override
     public boolean isIndexing() {
         return indexing;
-        /*if (!indexing) {
-            return false;
-        }
-
-        for (SiteIndexer indexer : siteIndexers) {
-            if (indexer.getStatus() == SiteIndexer.IndexStatus.INDEXING) {
-                return true;
-            }
-        }
-
-        indexing = false;
-        return false; */
     }
 
     public void indexingDone() {
@@ -204,14 +195,26 @@ public class IndexServiceImpl implements IndexService {
                 time, error);
     }
 
-    public int addPageBySiteId(Integer siteId, String path, int responseCode, String content){
+    public boolean isPageExist(int siteId, String path) {
+        return (pageRepository.countBySiteIdAndPath(siteId, path) > 0);
+    }
+
+    public int addPageBySiteId(Integer siteId, String path, int responseCode, String content)
+            throws SQLException {
         PageEntity pageEntity = new PageEntity();
         pageEntity.setCode(responseCode);
         pageEntity.setContent(content);
         pageEntity.setPath(path);
         pageEntity.setSiteId(siteId);
-        pageRepository.save(pageEntity);
 
+        if (isPageExist(siteId, path)) {
+            return -1;
+        }
+        try {
+            pageRepository.save(pageEntity);
+        } catch (Exception e) {
+            return -1;
+        }
         return pageEntity.getId();
     }
 

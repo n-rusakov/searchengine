@@ -3,13 +3,10 @@ package searchengine.siteindexer;
 import lombok.Getter;
 import searchengine.services.IndexServiceImpl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class PageIndexData {
-    private HashSet<String> visitedUrls;
     private String siteUrl;
     @Getter
     private int siteId;
@@ -24,11 +21,9 @@ public class PageIndexData {
     public static PageIndexData createRoot(String siteUrl, int siteId, IndexServiceImpl indexService) {
         PageIndexData root = new PageIndexData();
 
-        root.visitedUrls = new HashSet<>();
         root.siteUrl = siteUrl;
         root.siteId = siteId;
         root.path = "/";
-        root.visitedUrls.add(root.path);
         root.indexService = indexService;
 
         return root;
@@ -37,9 +32,8 @@ public class PageIndexData {
     public PageIndexData createChild(String path) {
         PageIndexData child = new PageIndexData();
 
-        child.visitedUrls = this.visitedUrls;
         child.siteUrl = this.siteUrl;
-        child.indexService= this.indexService;
+        child.indexService = this.indexService;
         child.siteId = this.siteId;
         child.path = path;
 
@@ -48,17 +42,15 @@ public class PageIndexData {
 
     public List<PageIndexData> processNewLinksToIndex(Collection<String> links) {
         ArrayList<String> newPatches = new ArrayList<>();
+        Set<String> patches = links.stream()
+                .map(this::getPathFromUrl)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
 
-        synchronized (visitedUrls) {
-            for (String link : links) {
-                String path = getPathFromUrl(link);
-                if (path == null) {
-                    continue;
-                }
-                if (!visitedUrls.contains(path)) {
-                    visitedUrls.add(path);
-                    newPatches.add(path);
-                }
+        for (String path : patches) {
+            boolean pageExist = indexService.isPageExist(this.siteId, path);
+            if (!pageExist) {
+                newPatches.add(path);
             }
         }
 

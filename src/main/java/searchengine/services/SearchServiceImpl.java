@@ -148,8 +148,6 @@ public class SearchServiceImpl implements SearchService {
         parameters.addValue("OFFSET", offset);
         List<SearchData> pages = template.query(MAIN_SEARCH_QUERY, parameters, searchDataRowMapper);
 
-        System.out.println("Pages size:" + pages.size());
-
         for (SearchData page : pages) {
             page.setRelevance(page.getRelevance()/countAndMax.max);
             setDataTitleAndSnippet(page, stringLemmas);

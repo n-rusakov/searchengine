@@ -51,7 +51,6 @@ public class SiteIndexer implements Runnable {
             log.info("Indexing start: " + site.getUrl());
             fjp = new ForkJoinPool();
             fjp.invoke(action);
-            log.info("Indexing ended: " + site.getUrl() + " Status: " + status);
 
             if (status == IndexStatus.INTERRUPTED) {
                 indexService.setSiteErrorById(siteId, INTERRUPT_MESSAGE, LocalDateTime.now());
@@ -59,6 +58,8 @@ public class SiteIndexer implements Runnable {
                 status = IndexStatus.DONE;
                 indexService.updateSiteStatusById(siteId, IndexingStatus.INDEXED, LocalDateTime.now());
             }
+            log.info("Indexing ended: " + site.getUrl() + " Status: " + status);
+
         } catch (Exception e) {
             log.error(INDEXING_ERROR_MESSAGE + " : " + e.getMessage());
             indexService.setSiteErrorById(siteId, INDEXING_ERROR_MESSAGE + " : " +

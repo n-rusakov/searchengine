@@ -9,6 +9,7 @@ import org.jsoup.select.Elements;
 import searchengine.services.IndexServiceImpl;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -30,7 +31,7 @@ public class PageIndexAction extends RecursiveAction {
         try {
             Connection.Response response = getResponse(pageIndexData.getUrl());
             if (response == null || response.contentType() == null ||
-                    !response.contentType().contains("html") || response.statusCode()>=400) {
+                    !response.contentType().contains("html") || response.statusCode() >= 400) {
                 return;
             }
             Document document = response.parse();
@@ -38,14 +39,15 @@ public class PageIndexAction extends RecursiveAction {
             // handle page content
             int pageId = service.addPageBySiteId(pageIndexData.getSiteId(),
                     pageIndexData.getPath(), response.statusCode(), response.body());
+            if (pageId < 0) {
+                return;
+            }
 
             service.saveLemmas(pageIndexData.getSiteId(), pageId, document.text());
 
             // update site status_time
             service.updateSiteStatusTimeById(pageIndexData.getSiteId(),
                     LocalDateTime.now());
-
-
             List<PageIndexData> pagesToIndex = pageIndexData.
                     processNewLinksToIndex(getLinks(document));
 
@@ -53,6 +55,8 @@ public class PageIndexAction extends RecursiveAction {
             invokeAll(actions);
         } catch (CancellationException | IOException e) {
             // do nothing
+        } catch (SQLException sqlException) {
+            // page exist
         }
 
     }
@@ -83,7 +87,7 @@ public class PageIndexAction extends RecursiveAction {
 
             return response;
         } catch (Exception e) {
-            return  null;
+            return null;
         }
     }
 

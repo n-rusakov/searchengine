@@ -17,5 +17,6 @@ public interface PageRepository extends JpaRepository<PageEntity, Integer> {
     void deleteBySiteId(@Param("site_id") int siteId);
 
     Optional<PageEntity> findBySiteIdAndPath(int siteId, String path);
+    Long countBySiteIdAndPath(int siteId, String path);
 
 }

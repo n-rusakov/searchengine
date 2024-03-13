@@ -18,7 +18,7 @@ public class LemmaEntity {
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id", updatable = false, insertable = false,
             foreignKey = @ForeignKey(name = "fk_lemma_site_id",
-                    foreignKeyDefinition = "FOREIGN KEY (SITE_ID) REFERENCES SITE(ID) " +
+                    foreignKeyDefinition = "FOREIGN KEY (site_id) REFERENCES site(id) " +
                             "ON UPDATE CASCADE ON DELETE CASCADE"))
     private SiteEntity site;
 
