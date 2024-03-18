@@ -48,7 +48,7 @@ public class SearchServiceImpl implements SearchService {
                 WHERE l.lemma IN (:LEMMAS) AND l.site_id IN (:SITES)
                 GROUP BY i.page_id
                 HAVING lemmas_count = :LEM_COUNT) AS idx ON idx.page_id = p.id
-            LEFT JOIN site AS s ON p.site_id = s.id  
+            LEFT JOIN site AS s ON p.site_id = s.id 
             """;
 
     private static final String MAIN_SEARCH_QUERY = """
